@@ -9,7 +9,7 @@ This file lists **the interfaces both Claude lanes depend on**. Lane A (backend)
 
 Adding a **new optional field** or a **new endpoint** is a "minor" change: post it in team chat, then merge. Renaming or removing anything is a "major" change and needs the PR above.
 
-Status: **DRAFT v1**. It is frozen at gate G0 (see TASKS.md).
+Status: **v1, implemented as stubs (A03).** Live reference: `http://localhost:8000/docs` while `make api` runs. Exact field names come from `backend/app/api/schemas.py`. Endpoints not yet implemented return the response header `X-Stub: true` with correctly shaped sample data.
 
 ---
 
@@ -84,7 +84,7 @@ Language:        en | kn
 | `GET /public/search?q=` | `{grievances:[{sr_id, category, status}], pages:[{title, path}], wards:[...]}`. Grievance search matches an exact SR id only |
 | `POST /public/visit` / `GET /public/visits` | real visitor counter (one hit per browser session) |
 | `GET /captcha` | `{captcha_id, question}` (math question, single use, expires in 10 min) |
-| `GET /meta/categories` `GET /meta/departments` `GET /meta/wards` | dropdown data (wards include GeoJSON when `?geo=1`) |
+| `GET /meta/categories` `GET /meta/departments` `GET /meta/wards` `GET /meta/crews?ward_id=` | dropdown data (wards include GeoJSON when `?geo=1`; crews include `open_work_orders`) |
 
 ### Complaints
 | Method & path | Role | Purpose |
@@ -141,7 +141,7 @@ Language:        en | kn
 | `GET /kpi` | CONTROL | `{total_reports, unique_issues, sla_compliance_pct, reopen_rate_pct, closed_citizen, closed_auto, by_category:[...], by_ward:[...]}` |
 | `GET /staff` ⬇ · `POST /staff` · `PATCH /staff/{id}` | CONTROL | create, edit and deactivate staff (WARD_OFFICER, FIELD_TEAM, CONTROL_ROOM, AGENCY) |
 | `GET /notifications` ⬇ | CONTROL | the full outbox |
-| `GET /notifications/mine` | any logged in | own in-app notifications |
+| `GET /notifications/mine` · `POST /notifications/{id}/read` | any logged in | own in-app notifications |
 
 ### Ingestion (machine clients, `X-API-Key` header, optional `Idempotency-Key` header)
 | Method & path | Purpose |

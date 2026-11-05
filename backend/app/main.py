@@ -27,6 +27,12 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     app.include_router(health, prefix=API)
+
+    # Every router is registered here once (A03) so later tasks never need to edit this file.
+    from app.api import auth, complaints, control, followup, ingest, public, work_orders
+    for module in (auth, public, complaints, work_orders, followup, control, ingest):
+        app.include_router(module.router, prefix=API)
+    app.include_router(auth.staff, prefix=API)
     return app
 
 
