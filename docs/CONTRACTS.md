@@ -9,7 +9,7 @@ This file lists **the interfaces both Claude lanes depend on**. Lane A (backend)
 
 Adding a **new optional field** or a **new endpoint** is a "minor" change: post it in team chat, then merge. Renaming or removing anything is a "major" change and needs the PR above.
 
-Status: **v1, implemented as stubs (A03).** Live reference: `http://localhost:8000/docs` while `make api` runs. Exact field names come from `backend/app/api/schemas.py`. Endpoints not yet implemented return the response header `X-Stub: true` with correctly shaped sample data.
+Status: **v1, implemented as stubs (A03).** Live reference: `http://localhost:8000/docs` while `dev.py api` runs. Exact field names come from `backend/app/api/schemas.py`. Endpoints not yet implemented return the response header `X-Stub: true` with correctly shaped sample data.
 
 ---
 
@@ -227,7 +227,7 @@ advisory.published {incident_id}     agent_run.finished {run_id, agent}
   AGENT_MODE=live|record|replay|rules
   ```
   On a 429, timeout or 5xx error the client moves to the next provider. Each `agent_runs.model` row stores `provider:model` or `rules`.
-- **`make llm-check`** calls every configured provider and prints a table: reachable / tool calling / JSON output / vision / latency.
+- **`dev.py llm-check`** calls every configured provider and prints a table: reachable / tool calling / JSON output / vision / latency.
 
 ## 9. Seed fixed IDs (Lane B seed relies on them; Lane A tests may use them)
 
