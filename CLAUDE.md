@@ -52,6 +52,10 @@ cd web && npm run gen:api    # regenerate frontend types from the running API
 ```
 The backend virtual env is `backend/.venv` (`Scripts\python.exe` on Windows, `bin/python` on macOS).
 
+**Lane B's Windows laptop uses Docker mode (`DEV_MODE=docker` in `.env`)**, because its security policy blocks native Python/Node files. There:
+- Never run `npm`, `npx`, `node`, `python` or `pip` directly. Use `py dev.py npm <args>` for npm, and `py dev.py test` / `py dev.py seed` for Python. They run inside the containers.
+- The web container sets `VITE_POLLING=true` (vite.config.ts must enable `server.watch.usePolling` when it's set), and `OPENAPI_URL=http://api-dev:8000/openapi.json` (`gen:api` must read it, defaulting to `http://localhost:8000/openapi.json`).
+
 ## How to work (to save usage)
 - One task at a time. Start a fresh session or run `/clear` between tasks; use `/compact` if a task runs long.
 - Before you code, state in 3–5 lines which files you'll touch. If any are outside your lane, stop and ask.

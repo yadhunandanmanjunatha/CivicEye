@@ -1,0 +1,8 @@
+# Development image: dependencies only. The source is mounted at /app by docker-compose (api-dev).
+FROM python:3.11-slim
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+COPY pyproject.toml /tmp/pyproject.toml
+RUN python -c "import tomllib; d=tomllib.load(open('/tmp/pyproject.toml','rb'))['project']; \
+open('/tmp/req.txt','w').write('\n'.join(d['dependencies'] + d['optional-dependencies']['dev']))" \
+ && pip install --no-cache-dir -r /tmp/req.txt

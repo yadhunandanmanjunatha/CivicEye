@@ -1,5 +1,7 @@
-# Development: `make db` starts only the database.
-# Full stack for judges: `docker compose --profile full up --build`.
+# Local mode   (`dev.py api` on macOS): only `db` runs in Docker; Python/Node run on the laptop.
+# Docker mode  (DEV_MODE=docker in .env, used on Windows): `api-dev` and `web-dev` run the code
+#              from this folder inside Linux containers, with auto-reload.
+# Full stack for judges: `dev.py full` (profile `full`).
 services:
   db:
     image: imresamu/postgis:16-3.4   # multi-arch PostGIS (works on Apple Silicon and Intel)
@@ -43,6 +45,44 @@ services:
     depends_on: [api]
     command: ["python", "sim.py", "--stream", "--rate", "5"]
 
+  api-dev:
+    profiles: [dev]
+    build: { context: ./backend, dockerfile: Dockerfile.dev }
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://civic:civic@db:5432/civicflow
+      TEST_DATABASE_URL: postgresql+psycopg://civic:civic@db:5432/civicflow_test
+      MEDIA_DIR: /media
+      WATCHFILES_FORCE_POLLING: "true"   # file changes from Windows aren't seen without polling
+      LLM_OLLAMA_BASE_URL: http://host.docker.internal:11434/v1
+    volumes:
+      - ./backend:/app
+      - /app/.venv                       # hide any laptop venv from the container
+      - media-dev:/media
+      - ./fixtures:/fixtures:ro
+    working_dir: /app
+    ports: ["8000:8000"]
+    depends_on: { db: { condition: service_healthy } }
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    command: ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --workers 1"]
+
+  web-dev:
+    profiles: [dev]
+    image: node:20-bookworm-slim
+    working_dir: /web
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      VITE_POLLING: "true"               # vite.config.ts turns on watch polling when this is set
+      VITE_API_BASE: http://localhost:8000/api/v1
+      OPENAPI_URL: http://api-dev:8000/openapi.json
+    volumes:
+      - ./web:/web
+      - web-node-modules:/web/node_modules   # Linux node_modules live in Docker, not on Windows
+    ports: ["5173:5173"]
+    command: ["sh", "-c", "npm install && npm run dev -- --host 0.0.0.0 --port 5173"]
+
 volumes:
   pgdata:
   media:
+  media-dev:
+  web-node-modules:
