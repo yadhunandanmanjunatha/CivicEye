@@ -9,10 +9,10 @@ Date: 2026-11-05
 
 1. **Nothing for show.** Every element visible on a page must work. No demo users, no fake buttons, no placeholder numbers. If a feature isn't working by the feature freeze, it is **removed from the UI**, not shown half-built.
 2. **Keep the full scope** of the original brief, including the small features (CSV export on tables, CSV import, pagination, CAPTCHA, A-/A/A+, high contrast, Kannada on citizen pages). Agent effort goes into the main scenarios, not into rare edge cases.
-3. **Login:** citizens register and log in with **mobile number + password**. Staff accounts (officers, field teams, control room) are created by Control Room users through a real **Staff Management** page; the very first Control Room account is created by `make seed`. Credentials never appear on any page.
+3. **Login:** citizens register and log in with **mobile number + password**. Staff accounts (officers, field teams, control room) are created by Control Room users through a real **Staff Management** page; the very first Control Room account is created by `dev.py seed`. Credentials never appear on any page.
 4. **Partner Agency Portal** (role `AGENCY`) replaces the "Simulated Agency Inbox". BESCOM/BWSSB liaison users log in, see referrals, and reply.
 5. **Notifications:** real in-app notifications (My Notifications page + Track page) and the outbox table. No SMS/WhatsApp/Telegram for now; the `SmsAdapter` interface exists but is not shown in the UI.
-6. **LLM: any provider.** A provider-agnostic adapter (OpenAI-compatible: Gemini, Groq, OpenRouter, OpenAI, Ollama; plus Anthropic native), with a provider **chain** in `.env`, a JSON-mode fallback for models without tool calling, and `make llm-check`. Rules fallback is always last. See CONTRACTS.md §8.
+6. **LLM: any provider.** A provider-agnostic adapter (OpenAI-compatible: Gemini, Groq, OpenRouter, OpenAI, Ollama; plus Anthropic native), with a provider **chain** in `.env`, a JSON-mode fallback for models without tool calling, and `dev.py llm-check`. Rules fallback is always last. See CONTRACTS.md §8.
 7. **Weather:** real **Open-Meteo** API (free, no key) for Bengaluru. Weather alerts can also be pushed through the ingestion API (`POST /ingest/weather-alerts`), which is what the rain test scenario uses.
 8. **No government labels anywhere.** No "Government of Karnataka", no fake helpline, no state emblem. The only identity is the fictional "CivicFlow Municipal Corporation", plus a thin banner: "Student hackathon prototype — not an official website."
 9. **No fake clock for the demo.** Seed data uses **real past timestamps** (e.g. a case filed 4 days ago is already at 74% of its SLA), so agents act live on genuinely aged cases. `TIME_SCALE` exists only for automated tests.
@@ -348,7 +348,7 @@ All the geography is around Kengeri / RR Nagar (lat 12.88–12.95, lon 77.46–7
 | **SLA policies** | category × priority grid (P1 manhole 4 h … P3 streetlight 7 d); verification window 24 h (P1) / 7 d | Clocks |
 | **History** | ~240 SRs over the last 90 days with a realistic mix of statuses, ~8% reopened, a share of AUTO closures, past WOs and repairs. Includes **WO-2026-000040** (pothole repaired 12 days ago at a spot the simulator later hits) | KPIs, repair failure |
 | **Live open cases** | 2 open streetlight complaints near pole 00871; one W13 pothole SR whose SLA is at 70%, so it crosses 75% about a minute into the demo | Agents 1 and 2 |
-| **Users (v2)** | `make seed` creates the first Control Room account from `.env` (`SEED_ADMIN_MOBILE`, `SEED_ADMIN_PASSWORD`) plus the staff accounts in `seed/data/staff.yaml` (passwords from `.env`, never on any page). Escalation authorities L1 AE → L2 AEE (zonal) → L3 EE → L4 Commissioner are real staff records with designations. Citizens register themselves; historical complaints belong to seeded citizen records that have no password (they can't log in) | Logins |
+| **Users (v2)** | `dev.py seed` creates the first Control Room account from `.env` (`SEED_ADMIN_MOBILE`, `SEED_ADMIN_PASSWORD`) plus the staff accounts in `seed/data/staff.yaml` (passwords from `.env`, never on any page). Escalation authorities L1 AE → L2 AEE (zonal) → L3 EE → L4 Commissioner are real staff records with designations. Citizens register themselves; historical complaints belong to seeded citizen records that have no password (they can't log in) | Logins |
 | **Data sources** | `oem-sim` with an API key from `.env` | Ingestion |
 | **Photos** | `fixtures/photos/`: pothole_before.jpg, pothole_after_ok.jpg, pothole_after_far.jpg, streetlight.jpg, reused.jpg. The seed script **rewrites their EXIF** (GPS and time relative to the demo clock) with piexif | Agent 4 FAIL then PASS |
 
@@ -369,7 +369,7 @@ All the geography is around Kengeri / RR Nagar (lat 12.88–12.95, lon 77.46–7
 | **P3 Frontend** | GIGW frame, shared DataTable/Fieldset/Captcha, Lodge → Ack slip → Track, login, officer queue, field jobs | System Analysis panel + Activity Log | Control Room panels, verification queue, incidents, agency inbox | Demo-path polish, a11y pass, Kannada strings |
 | **P4 Data & sensing** | Seed data (geo, assets, history, users, photos), simulator skeleton | Ingestion API + validation + dead-letter | **Agent 3 → Agent 5**, hazard map, data sources table | Playwright test, demo script, README, backup video |
 
-Every person owns their own tests. P1 owns `make test` staying green.
+Every person owns their own tests. P1 owns `dev.py test` staying green.
 
 ---
 

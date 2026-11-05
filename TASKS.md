@@ -50,7 +50,7 @@ gh pr create --fill
 - Branch names: `a/<task-id>-<slug>` for Lane A, `b/<task-id>-<slug>` for Lane B, `fix/<slug>` for small fixes.
 - **PR rule:**
   - the other person skims it (5 min) and confirms it doesn't touch their files;
-  - `make test` passes;
+  - `dev.py test` passes;
   - **Person A merges** (squash).
 - If a rebase conflicts in a file you don't own, **stop**: it means someone broke the ownership rule. Talk before resolving.
 
@@ -60,7 +60,7 @@ Target hours assume a 24 h build with a freeze at hour 20.
 
 | Gate | ~Hour | Must be true | Checked by |
 |---|---|---|---|
-| **G0 Contracts frozen** | 2 | A01–A03 and B01 merged; on **both laptops** `make db` + `make api` + `make web` show API `/docs` and the web frame; `npm run gen:api` works | both |
+| **G0 Contracts frozen** | 2 | A01–A03 and B01 merged; on **both laptops** `dev.py db` + `dev.py api` + `dev.py web` show API `/docs` and the web frame; `npm run gen:api` works | both |
 | **G1 Platform** | 8 | Register/login works; Lodge → Ack slip → Track works against the real API; officer queue shows seeded aged cases; field user sees their jobs | Person A tests B's screens |
 | **G2 Vertical slice** ★ | 12 | Citizen lodges → Agent 1 brief in System Analysis → officer Accept → work order → field uploads after-photo → Agent 4 verdict → control room Approve → citizen sees before/after → Confirm → CLOSED. Works with `AGENT_MODE=rules` **and** with an LLM. Playwright test green | both, together |
 | **G3 All agents** | 17 | Agents 2, 3 and 5 trigger and appear in the Activity Log; agency portal reply works; hazard map; incidents + advisory publish → ticker | both |
@@ -85,7 +85,7 @@ Each task lists: priority, dependencies, branch; files; what to do; done when; t
   - Makefile targets: `setup` (venv + pip install + `npm install`), `db`, `api`, `web`, `seed`, `demo`, `test`, `llm-check`, `reset`. They must work on macOS and Windows/WSL.
   - Error handler producing the CONTRACTS §1 error shape.
   - A `README.md` "Getting started" section written for someone who has never used Docker.
-- **Done when:** on a clean clone, `make setup && make db && make api` → health returns 200.
+- **Done when:** on a clean clone, `dev.py setup` then `dev.py api` → health returns 200.
 - **Tests:** health check, error-shape test.
 
 **A02 · Models + initial migration**
@@ -161,7 +161,7 @@ Each task lists: priority, dependencies, branch; files; what to do; done when; t
   - `native` vs `json` tool mode;
   - images for vision providers;
   - record/replay cache with normalised keys (a miss → next provider → rules);
-  - `make llm-check`.
+  - `dev.py llm-check`.
 - **Tests:** failover order with mocked HTTP; JSON-mode parsing (including a malformed reply → retry); a replay hit/miss.
 
 **A11 · `notify_citizen` + notifications**
@@ -291,7 +291,7 @@ Each task lists: priority, dependencies, branch; files; what to do; done when; t
 - **Do:**
   - **First (hour 2–3):** write `seed/data/README.md` with the exact YAML/GeoJSON format and one example per file, so B18/B19 can fill them.
   - Then the loader: idempotent, fixed IDs from CONTRACTS §9, **timestamps relative to now** (aged cases), ~240 historical SRs generated from rules in YAML, staff accounts with passwords from `.env`, and photo EXIF rewritten from `fixtures/photos/` (piexif).
-  - `make seed` calls it (Person A adds the Makefile target if it's missing).
+  - `dev.py seed` calls it (already wired in dev.py).
 - **Tests:** seeding twice gives identical IDs; the W13 job is at about 74% SLA right after the seed.
 
 **B13 · Simulator**
@@ -340,7 +340,7 @@ Each task lists: priority, dependencies, branch; files; what to do; done when; t
   - 2 waterlogging/drain photos.
 
   Put them in `fixtures/photos/` with a `photos.yaml` listing what each one is. Send them from the phone to the laptop as **files** (AirDrop, USB or Google Drive "original quality"), not through WhatsApp, which strips location.
-- **P-2 (both)** · run `make llm-check` once A10 merges and note which providers work.
+- **P-2 (both)** · run `dev.py llm-check` once A10 merges and note which providers work.
 - **P-3 (both, at each gate)** · test the **other** person's lane as a real user. File every bug as a GitHub issue (steps, expected, actual, screenshot, label `lane-a`/`lane-b`).
 - **P-4 (Person B, after G4)** · `docs/DEMO_SCRIPT.md` (who clicks what, which account, what to say), pitch slides, backup video.
 
@@ -371,7 +371,7 @@ e2e/, or backend/app/seed/. Do not change docs/CONTRACTS.md; if a contract seems
 wrong, stop and tell me.
 Your task: <paste the task block, e.g. "A07 · Complaints API" from TASKS.md>.
 Before coding, list the files you will touch and the tests you will write, then wait
-for my OK. Write tests with the code, run `make test`, and report: what changed, how
+for my OK. Write tests with the code, run `dev.py test`, and report: what changed, how
 to verify, what's left. Don't commit or push.
 ```
 

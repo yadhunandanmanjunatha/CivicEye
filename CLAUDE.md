@@ -38,20 +38,19 @@ Frontend: React + Vite + TypeScript, React Router, CSS modules, Leaflet + leafle
 uvicorn runs with **one worker** (the scheduler and event bus are in-process).
 
 ## Commands
-Development (Docker runs only the database):
+All commands go through **`dev.py`** (cross-platform). Lane A develops on macOS, Lane B on **Windows**. Don't write shell-only scripts (`bash`, `&&` chains in package.json, `rm -rf`); use Node or Python so they work on both. On Windows, run `py dev.py <cmd>`; on macOS, `python3 dev.py <cmd>` or `make <cmd>`.
 ```
-make db                      # docker compose up -d db  (PostGIS)
-make api                     # cd backend && uvicorn app.main:app --reload (1 worker)
-make web                     # cd web && npm run dev
-```
-Other:
-```
-docker compose up            # everything in containers (built at the end, for judges)
-make seed                    # reset + seed (idempotent, fixed IDs)
-make test                    # backend pytest (+ e2e when web is up)
-make llm-check               # test each configured LLM provider
+dev.py setup                 # .env + venv + pip install + npm install
+dev.py db                    # PostGIS in Docker on port 5433 (Docker runs only the database)
+dev.py api                   # db + migrations + uvicorn --reload on :8000 (1 worker)
+dev.py web                   # npm run dev on :5173
+dev.py seed                  # reset + seed (idempotent, fixed IDs)
+dev.py test                  # backend pytest (+ e2e when present)
+dev.py llm-check             # test each configured LLM provider
+dev.py full                  # everything in containers (built at the end, for judges)
 cd web && npm run gen:api    # regenerate frontend types from the running API
 ```
+The backend virtual env is `backend/.venv` (`Scripts\python.exe` on Windows, `bin/python` on macOS).
 
 ## How to work (to save usage)
 - One task at a time. Start a fresh session or run `/clear` between tasks; use `/compact` if a task runs long.
