@@ -42,3 +42,13 @@ All commands go through `dev.py`, which works the same on every system:
 Other commands: `test`, `llm-check`, `reset` (wipes the database), `full` (everything in Docker). Run `py dev.py` with no command to see the list.
 
 If `db` says Docker isn't running, open Docker Desktop and wait for "Engine running".
+
+### Windows: "An Application Control policy has blocked this file"
+
+Some Windows laptops block Python and Node's compiled files. If you see this error, use **Docker mode**: the backend and website then run inside Linux containers, and nothing needs to be installed on Windows except Git, Python and Docker Desktop.
+
+1. In `.env`, set `DEV_MODE=docker`.
+2. Run `py dev.py setup`, then `py dev.py api`, and `py dev.py web` in a second terminal. The commands stay the same.
+3. Extra Docker-mode commands: `py dev.py npm install <package>` (runs npm inside the container) and `py dev.py shell` (a terminal inside the backend container).
+
+Code changes still reload automatically.
