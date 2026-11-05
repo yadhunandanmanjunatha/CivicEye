@@ -1,0 +1,48 @@
+# Development: `make db` starts only the database.
+# Full stack for judges: `docker compose --profile full up --build`.
+services:
+  db:
+    image: imresamu/postgis:16-3.4   # multi-arch PostGIS (works on Apple Silicon and Intel)
+    environment:
+      POSTGRES_USER: civic
+      POSTGRES_PASSWORD: civic
+      POSTGRES_DB: civicflow
+    ports: ["5433:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/initdb.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U civic -d civicflow"]
+      interval: 3s
+      retries: 20
+
+  api:
+    profiles: [full]
+    build: ./backend
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://civic:civic@db:5432/civicflow
+      MEDIA_DIR: /media
+    volumes: [media:/media]
+    ports: ["8000:8000"]
+    depends_on: { db: { condition: service_healthy } }
+    extra_hosts: ["host.docker.internal:host-gateway"]
+
+  web:
+    profiles: [full]
+    build: ./web
+    ports: ["5173:80"]
+    depends_on: [api]
+
+  simulator:
+    profiles: [full]
+    build: ./simulator
+    env_file: .env
+    environment:
+      API_BASE_URL: http://api:8000/api/v1
+    depends_on: [api]
+    command: ["python", "sim.py", "--stream", "--rate", "5"]
+
+volumes:
+  pgdata:
+  media:
